@@ -244,13 +244,17 @@ bool aStar(Vector2D* start, Vector2D* end)
 		int lower_score = 0;
 		for(int ik = 0; ik<=openlist.size(); ik++)
 		{
+			if(openlist.size() == 1)
+				break;
 			//Now check which score is lower;
 			if((lower_score == 0 && openlist[ik].f_.f_ > 0) || (openlist[ik].f_.f_ < lower_score && openlist[ik].f_.f_ > 0)){
 				lower_score = openlist[ik].f_.f_;
-				cout << lower_score;
+				//cout << lower_score;
 			}
 			else
 				openlist.erase(openlist.begin() + ik, openlist.begin() + 1 + ik); // Delete it
+			if(ik == openlist.size())
+				ik = 0;
 		}
 		//Woot Woot!! We got the lowest "F" score; Now hopefully we only have a single element left in the openlist;
 		for(int i = 0; i<openlist.size(); i++)
