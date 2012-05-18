@@ -72,11 +72,6 @@ int mapGrid[20][20] =
 	{ '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'B', '#' },
 	{ '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#' },
 };
-/**
-*	Setting up the parent array;
-*	We have the a 2D vector array containing the node, and it's parent node; 
-*/
-vector<int*> parentNodes;
 
 bool isDiagonal(int x, int y)
 {
@@ -93,30 +88,6 @@ bool isDiagonal(int x, int y)
 
 bool aStar(Vector2D* start, Vector2D* end)
 {
-	struct Vertices{
-		bool bl; // Bottom Left;
-		bool ml; // Middle Left;
-		bool tl; // Top Left;
-
-		bool tm; // Top Middle;
-
-		bool tr; // Top Right;
-		bool mr; // Middle Right;
-		bool br; // Bottom Right;
-
-		bool bm; // Bottom Middle;
-	};
-
-	struct parent{
-		int x;
-		int y;
-		parent(int x_, int y_)
-		{
-			x = x_;
-			y = y_;
-		}
-	};
-
 	struct score{
 		int f_;
 		int g_;
@@ -137,11 +108,27 @@ bool aStar(Vector2D* start, Vector2D* end)
 			position = pos;
 			f_ = g;
 		}
+		Point(void){}
+	};
+
+	struct parent{
+		Point parentID;
+		Point element;
+		parent(Point _parentID, Point _element)
+		{
+			parentID = _parentID;
+			element  = _element;
+		}
 	};
 
 	vector<Point> openlist;
 	vector<Vector2D*> closedlist;
-	vector<parent> pathToNode; // Loop through and make the path;
+	vector<Vector2D> pathToNode; // Loop through and make the path;
+	/**
+	*	Setting up the parent array;
+	*	We have the a 2D vector array containing the node, and it's parent node; 
+	*/
+	vector<parent> parentNodes;
 
 	//Scores;
 	vector<score> g_score;
@@ -214,23 +201,25 @@ bool aStar(Vector2D* start, Vector2D* end)
 
 				//Now let's find those positions;
 				Vector2D *adj = new Vector2D(openX + nX, openY + nY);
-
-				if((char)mapGrid[adj->getY()][adj->getX()] == '#')
+				if(! ((((openX + nX) == 1) && ((openY + nY) == 1)) && (openX == 1 && openY == 1)))
 				{
-					//Forgot about this vector2D, because it's not a valid (Walkable surface or Vector)
-					//Add it to the closed lists;
-					closedlist.push_back(adj);
-				}
-				else
-				{
-					//Check if this one is in the closed list;
-					//for(int pos = 0; pos< closedlist.size(); pos++)
-					//{
-						//if(closedlist.at(pos)->getX() != adj->getX() && closedlist.at(pos)->getY() != adj->getY())
+					if((char)mapGrid[adj->getY()][adj->getX()] == '#')
+					{
+						//Forgot about this vector2D, because it's not a valid (Walkable surface or Vector)
+						//Add it to the closed lists;
+						closedlist.push_back(adj);
+					}
+					else
+					{
+						//Check if this one is in the closed list;
+						//for(int pos = 0; pos< closedlist.size(); pos++)
 						//{
-							openlist.push_back(Point(adj, score(g_, h_)));
+							//if(closedlist.at(pos)->getX() != adj->getX() && closedlist.at(pos)->getY() != adj->getY())
+							//{
+								openlist.push_back(Point(adj, score(g_, h_)));
+							//}
 						//}
-					//}
+					}
 				}
 			}
 			//cout << "==================" << endl;
@@ -257,8 +246,15 @@ bool aStar(Vector2D* start, Vector2D* end)
 				ik = 0;
 		}
 		//Woot Woot!! We got the lowest "F" score; Now hopefully we only have a single element left in the openlist;
-		for(int i = 0; i<openlist.size(); i++)
-			cout << openlist[i].f_.f_ << endl;
+		if(openlist.size() == 1)
+		{
+			//Now add the parent with the proper score (Adding the parent score to this one;
+			openlist[0].f_.f_ += previousObj.f_.f_;
+			parentNodes.push_back(parent(previousObj, openlist[0]));
+			pathToNode.push_back(*(openlist[0].position));
+			//cout << openlist[0].position->getY();
+		}
+
 		break;
 	}
 
@@ -272,7 +268,7 @@ bool aStar(Vector2D* start, Vector2D* end)
 			for(int pass = 0; pass<pathToNode.size(); ++pass)
 			{
 				//cout << pathToNode.at(pass).x << pathToNode.at(pass).y << endl;
-				if(width == pathToNode.at(pass).x && height == pathToNode.at(pass).y)
+				if(width == pathToNode.at(pass).getX() && height == pathToNode.at(pass).getY())
 				{
 					//cout << "Width: " << width << " Height: " << height << endl;
 					//cout << "X: " << pathToNode.at(pass).x << " Y: " << pathToNode.at(pass).y << endl << endl;
