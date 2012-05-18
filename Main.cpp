@@ -201,6 +201,7 @@ bool aStar(Vector2D* start, Vector2D* end)
 
 				//Now let's find those positions;
 				Vector2D *adj = new Vector2D(openX + nX, openY + nY);
+				//THE BUG IS THE NEXT LINE UNDER THIS; \/
 				if(! ((((openX + nX) == 1) && ((openY + nY) == 1)) && (openX == 1 && openY == 1)))
 				{
 					if((char)mapGrid[adj->getY()][adj->getX()] == '#')
